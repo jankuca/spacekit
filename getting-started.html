@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<meta charset="UTF-8" />
+<title>Getting Started – ian Library Documentation</title>
+
+<link rel="stylesheet" href="./css/docs.css">
+
+<script src="http://esprima.org/esprima.js"></script>
+<script src="./js/highlighter.js"></script>
+
+<body>
+<h1>Getting Started</h1>
+
+<h2 id="components">Components</h2>
+
+<p>Components (<code>spacekit.ui.Component</code> instances) are the most fundamental building blocks of a Space Kit application. A component is a representation of a single element. Components can be easily transformed using CSS transforms based on an outer value such as the scroll position. They can also be nested within each other which results in a component tree where transformations of many components can be abstracted away to an upper level of the hierarchy.</p>
+
+<p>There are two core methods for modifying component element rendering and methods for component composition:</p>
+<ul>
+  <li><code>setTransform(<var>options</var><s>: { rotate, scale, translate }</s>)</code>
+  <li><code>setOpacity(<var>opacity</var><s>: number</s>)</code>
+  <li><code>addChild(<var>child</var><s>: spacekit.ui.Component</s>)</code>
+  <li><code>removeChild(<var>child</var><s>: spacekit.ui.Component</s>)</code>
+</ul>
+
+<p>Each component with transform options must have a DOM element associated with it for the transform to have any effect on the component and its children. Components do not create their DOM elements, they get them from the outside and <em>decorate</em> them. This is a common practice in Google Closure components.</p>
+
+<code>var component = new spacekit.ui.Component();
+component.setTransform({ rotate: 45 });
+
+var element: Element; // get the element somehow
+component.decorate(element);
+</code>
+
+<h2 id="stage">Stage</h2>
+
+<p>The Space Kit framework comes with a couple of predefined components for easier development. One of these is a stage component (<code>spacekit.ui.PerspectiveStage</code>) which should usually be considered the root or upper-most component in a component tree.</p>
+
+<p>Unlike most other components, a stage depends on a viewport (<code>spacekit.Viewport</code>) in which it is contained and on a scroll handler (<code>spacekit.VerticalScrollHandler</code>). Stage is <strong>not</strong> a required component in a component tree but can help quite a bit as it is the scroll change entrypoint.</p>
+
+<p>There can be multiple stage components on a single page and each can be limited to handle only a specified range of scroll positions. Components to which these scroll range limits can be applied are called <em>scroll transformer</em> components (instances of <code>spacekit.ui.ScrollTransformer</code>). The scroll position range can be specified via the <code>setEffectiveScrollRange(<var>start</var><s>: number</s>, <var>end</var><s>: number</s>)</code> method.</p>
+
+<code>var viewport = new spacekit.Viewport(window);
+var scroll_handler = new spacekit.VerticalScrollHandler(viewport);
+
+var intro_stage = new spacekit.ui.PerspectiveStage(viewport, scroll_handler);
+var footer_stage = new spacekit.ui.PerspectiveStage(viewport, scroll_handler);
+
+intro_stage.setEffectiveScrollRange(0, 500);
+footer_stage.setEffectiveScrollRange(1000, null);
+</code>
+
+<p>The first stage (<code>intro_stage</code>) handles the first 500 px of the vertical page length whereas the second stage (<code>footer_stage</code>) is configured to handle the scroll position after the first 1000 px of the page length with no end bound (i.e. until the end of the page).</p>
+
+<h2 id="scroll-handling">Scroll Handling</h2>
+
+<p>
