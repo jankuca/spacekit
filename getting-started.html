@@ -49,8 +49,42 @@ intro_stage.setEffectiveScrollRange(0, 500);
 footer_stage.setEffectiveScrollRange(1000, null);
 </code>
 
-<p>The first stage (<code>intro_stage</code>) handles the first 500 px of the vertical page length whereas the second stage (<code>footer_stage</code>) is configured to handle the scroll position after the first 1000 px of the page length with no end bound (i.e. until the end of the page).</p>
+<p>The first stage (<code>intro_stage</code>) handles the first <code>500</code> px of the vertical page length whereas the second stage (<code>footer_stage</code>) is configured to handle the scroll position after the first <code>1000</code> px of the page length with no end bound (i.e. until the end of the page).</p>
 
 <h2 id="scroll-handling">Scroll Handling</h2>
 
-<p>
+<p>The scroll events from the <code>Window</code> object of the page are monitored by the <strong>viewport</strong> and propagated to <strong>scroll handler</strong> objects. A stage component then gets the scroll position value from its associated scroll handler.</p>
+
+<p>All components propagate the scroll value down the hierarchy to their child components.</p>
+
+<h2 id="scroll-transformation">Scroll Transformation</h2>
+
+<p>A component can override its <code>scrollTo(<code>scroll</code><s>: number</s>)</code> method to transform the scroll position and send the new value to its children instead of the original.</p>
+
+<p>The stage element utilizes this pattern and converts the absolute scroll position values to <strong>values relative to the scroll range handled by the stage</strong>.</p>
+
+<p>There is also a more specialized <code>spacekit.ui.ViewportStage</code> stage component which converts the absolute scroll position values to <strong>viewport-relative values</strong> where <code>0</code> equals <code>0</code> and the <em>viewport height</em> equals <code>100</code>. This value is (like with <code>spacekit.ui.Stage</code>) relative to the scroll range handled by the stage.</p>
+
+<h2 id="animation-normalization">Animation Normalization</h2>
+
+<p>It makes a lot of sense to further abstract animation progress into a <code>0</code>–<code>1</code> range. The <code>spacekit.ui.AnimationNormalizer</code> does just that. It requires a scroll range to be specified via the aforementioned <code>setEffectiveScrollRange(<var>start</var>, <var>end</var>)</code> method.</p>
+
+<p>When the animation normalizer component is placed in the component tree, all its child components receive scroll values within the <code>0</code>–<code>1</code> range. The Space Kit framework provides a simple way to handle these values: <code>spacekit.ui.ProgressComponent</code>.</p>
+
+<p>A "progress component" (or a component with normalized progress) implements a <code>setProgress(<var>progress</var><s>: number</s>)</code> method which takes the progress value and calculates the respective transformation options based on its configuration. The stock <code>spacekit.ui.ProgressComponent</code> can be configured to automatically control position, rotation and scaling.</p>
+
+<code>var component = new spacekit.ui.ProgressComponent();
+component.setPositionRange(0, 100);
+component.setScaleRange(1, 1.5);
+
+var element: !Element; // get the element somehow
+component.decorate(element);
+
+var animation = new spacekit.ui.AnimationNormalizer();
+animation.setEffectiveScrollRange(0, 500);
+animation.addChild(component);
+
+stage.addChild(animation);
+</code>
+
+<p>The <code>element</code> is starts at a <code>0</code> position offset and <code>100%</code> size and is moved down <code>100</code> vh (viewport height units) and scaled to <code>150%</code> as the page is scrolled for from the top to the <code>500</code> px level.</p>
